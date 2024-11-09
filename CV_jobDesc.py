@@ -13,16 +13,6 @@ st.write("Upload your CV and paste the job description to see how well your CV a
 # Load the pre-trained SentenceTransformer model
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
-# Load GPT-4-Alpaca model and tokenizer
-@st.cache_resource
-def load_feedback_model():
-    model_name = "chavinlo/gpt4-alpaca"  # Replace with the correct Hugging Face model name
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    alpaca_model = AutoModelForCausalLM.from_pretrained(model_name)
-    return alpaca_model, tokenizer
-
-alpaca_model, tokenizer = load_feedback_model()
-
 # Streamlit file uploader
 uploaded_file = st.file_uploader("Upload your CV file", type=['docx', 'txt'])
 
@@ -63,17 +53,6 @@ if uploaded_file is not None and job_description:
             st.info("Moderate Suitability")
         else:
             st.warning("Low Suitability")
-
-        # Truncate the CV content and job description to avoid exceeding model input limits
-        truncated_cv_content = file_content[:1000]  # Truncate CV text to first 1000 characters
-        truncated_job_description = job_description[:1000]  # Truncate job description to first 1000 characters
-
-        # Generate feedback using GPT-4-Alpaca with specific prompt
-        feedback_prompt = f"The job description is:\n{truncated_job_description}\n\nThe CV content is:\n{truncated_cv_content}\n\nPlease provide feedback on what could be improved in the CV to better match the job description."
-        
-        inputs = tokenizer(feedback_prompt, return_tensors="pt").to(alpaca_model.device)
-        output = alpaca_model.generate(inputs.input_ids, max_length=500, num_return_sequences=1)
-        feedback = tokenizer.decode(output[0], skip_special_tokens=True)
 
         # Display improvement suggestions
         st.subheader("Improvement Suggestions")
