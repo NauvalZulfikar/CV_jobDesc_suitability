@@ -54,10 +54,6 @@ if uploaded_file is not None and job_description:
         else:
             st.warning("Low Suitability")
 
-        # Display improvement suggestions
-        st.subheader("Improvement Suggestions")
-        st.write(feedback)
-
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
