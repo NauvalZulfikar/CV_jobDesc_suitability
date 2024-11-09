@@ -2,51 +2,61 @@ import streamlit as st
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import AutoModelForCausalLM, AutoTokenizer
-# import spacy
+import torch
 import numpy as np
 from docx import Document  # Import python-docx for handling DOCX files
 
-# Load NLP model for Named Entity Recognition (NER)
-nlp = spacy.load("en_core_web_sm")  # Ensure spacy model is installed
+# Streamlit app code
+st.title("CV Suitability Checker using Large Language Model (LLM)")
+st.write("This tool surpasses typical ATS systems by using semantic analysis to assess CV-job alignment contextually, not just through keyword matching. It leverages SentenceTransformer for nuanced similarity scoring and integrates advanced language models to generate tailored feedback, helping applicants refine their CVs to better fit specific job descriptions.")
+st.write("Upload your CV and paste the job description to see how well your CV aligns with the job requirements and get improvement suggestions.")
 
-# Load SentenceTransformer model
+# Load the pre-trained SentenceTransformer model
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
-# Function to extract skills and entities from job description
-def extract_skills(job_description):
-    doc = nlp(job_description)
-    skills = [ent.text for ent in doc.ents if ent.label_ == "SKILL"]  # Modify as needed
-    return skills
-
-# Streamlit app
-st.title("Enhanced CV Suitability Checker")
-st.write("Upload your CV and enter the job description to see how well it aligns. Get specific feedback on skills, experience, and ATS compatibility.")
-
-# File upload and job description input
+# Streamlit file uploader
 uploaded_file = st.file_uploader("Upload your CV file", type=['docx', 'txt'])
+
+# Job description input
 job_description = st.text_area("Enter the Job Description")
 
-if uploaded_file and job_description:
+# Function to extract text from DOCX file
+def read_docx(file):
+    doc = Document(file)
+    full_text = []
+    for para in doc.paragraphs:
+        full_text.append(para.text)
+    return "\n".join(full_text)
+
+# Check if file and job description are provided
+if uploaded_file is not None and job_description:
     try:
-        # Extract and analyze job description skills
-        job_skills = extract_skills(job_description)
-        st.write(f"Key Skills Extracted from Job Description: {', '.join(job_skills)}")
+        # Check file type and read content accordingly
+        if uploaded_file.name.endswith('.docx'):
+            file_content = read_docx(uploaded_file)
+        else:
+            file_content = uploaded_file.read().decode('utf-8')  # For plain text files
 
-        # Read CV content
-        def read_docx(file):
-            doc = Document(file)
-            full_text = [para.text for para in doc.paragraphs]
-            return "\n".join(full_text)
-        
-        file_content = read_docx(uploaded_file) if uploaded_file.name.endswith('.docx') else uploaded_file.read().decode('utf-8')
-
-        # Semantic similarity scoring
+        # Encode the CV and job description
         cv_embedding = model.encode(file_content, convert_to_tensor=True)
         job_desc_embedding = model.encode(job_description, convert_to_tensor=True)
+
+        # Calculate cosine similarity
         similarity_score = cosine_similarity(cv_embedding.reshape(1, -1), job_desc_embedding.reshape(1, -1))[0][0]
+
+        # Display the similarity score
         st.write(f"Suitability Score: {similarity_score*100:.2f}%")
+
+        # Interpretation of the score
+        if similarity_score >= 0.8:
+            st.success("High Suitability!")
+        elif similarity_score >= 0.5:
+            st.info("Moderate Suitability")
+        else:
+            st.warning("Low Suitability")
 
     except Exception as e:
         st.error(f"An error occurred: {e}")
+
 else:
-    st.info("Please upload a CV and enter a job description.")
+    st.info("Please upload your CV and enter a job description.")
