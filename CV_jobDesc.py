@@ -60,6 +60,14 @@ if uploaded_file is not None and job_description:
         else:
             st.warning("Low Suitability")
 
+        # Generate feedback using GPT-Neo
+        feedback_prompt = f"The job description is:\n{job_description}\n\nThe CV content is:\n{file_content}\n\nPlease provide feedback on what could be improved in the CV to better match the job description."
+        feedback = feedback_model(feedback_prompt, max_length=150, num_return_sequences=1)[0]['generated_text']
+
+        # Display improvement suggestions
+        st.subheader("Improvement Suggestions")
+        st.write(feedback)
+
     except Exception as e:
         st.error(f"An error occurred: {e}")
 
