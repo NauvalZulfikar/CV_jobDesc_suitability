@@ -1,6 +1,7 @@
 import streamlit as st
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from transformers import pipeline
 import numpy as np
 from docx import Document  # Import python-docx for handling DOCX files
 
@@ -10,6 +11,13 @@ st.write("Upload your CV and paste the job description to see how well your CV a
 
 # Load the pre-trained SentenceTransformer model
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+
+# Load a text generation model for feedback
+@st.cache_resource
+def load_feedback_model():
+    return pipeline("text-generation", model="EleutherAI/gpt-neo-1.3B")
+
+feedback_model = load_feedback_model()
 
 # Streamlit file uploader
 uploaded_file = st.file_uploader("Upload your CV file", type=['docx', 'txt'])
