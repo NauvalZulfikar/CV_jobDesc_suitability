@@ -46,12 +46,6 @@ if uploaded_file and job_description:
         similarity_score = cosine_similarity(cv_embedding.reshape(1, -1), job_desc_embedding.reshape(1, -1))[0][0]
         st.write(f"Suitability Score: {similarity_score*100:.2f}%")
 
-        # Feedback on missing skills
-        cv_skills = extract_skills(file_content)
-        missing_skills = [skill for skill in job_skills if skill not in cv_skills]
-        if missing_skills:
-            st.warning(f"Consider adding these skills: {', '.join(missing_skills)}")
-
     except Exception as e:
         st.error(f"An error occurred: {e}")
 else:
