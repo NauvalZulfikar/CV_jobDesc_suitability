@@ -66,7 +66,7 @@ if uploaded_file is not None and job_description:
 
         # Generate feedback using GPT-Neo with a reduced max_length
         feedback_prompt = f"The job description is:\n{truncated_job_description}\n\nThe CV content is:\n{truncated_cv_content}\n\nPlease provide feedback on what could be improved in the CV to better match the job description."
-        feedback = feedback_model(feedback_prompt, max_length=500, num_return_sequences=1)[0]['generated_text']
+        feedback = feedback_model(feedback_prompt, max_length=5000, num_return_sequences=1)[0]['generated_text']
 
         # Display improvement suggestions
         st.subheader("Improvement Suggestions")
