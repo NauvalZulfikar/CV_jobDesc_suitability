@@ -1,7 +1,8 @@
 streamlit
 sentence-transformers
 scikit-learn
-numpy
-python-docx
 transformers
 torch
+numpy
+python-docx
+spacy
