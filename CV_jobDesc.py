@@ -60,9 +60,13 @@ if uploaded_file is not None and job_description:
         else:
             st.warning("Low Suitability")
 
-        # Generate feedback using GPT-Neo
-        feedback_prompt = f"The job description is:\n{job_description}\n\nThe CV content is:\n{file_content}\n\nPlease provide feedback on what could be improved in the CV to better match the job description."
-        feedback = feedback_model(feedback_prompt, max_length=5000, num_return_sequences=1)[0]['generated_text']
+        # Truncate the CV content and job description to avoid exceeding model input limits
+        truncated_cv_content = file_content[:1000]  # Truncate CV text to first 1000 characters
+        truncated_job_description = job_description[:1000]  # Truncate job description to first 1000 characters
+
+        # Generate feedback using GPT-Neo with a reduced max_length
+        feedback_prompt = f"The job description is:\n{truncated_job_description}\n\nThe CV content is:\n{truncated_cv_content}\n\nPlease provide feedback on what could be improved in the CV to better match the job description."
+        feedback = feedback_model(feedback_prompt, max_length=500, num_return_sequences=1)[0]['generated_text']
 
         # Display improvement suggestions
         st.subheader("Improvement Suggestions")
