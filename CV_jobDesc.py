@@ -6,8 +6,8 @@ import numpy as np
 from docx import Document  # Import python-docx for handling DOCX files
 
 # Streamlit app code
-st.title("CV Suitability Checker")
-st.write("Upload your CV and paste the job description to see how well your CV aligns with the job requirements.")
+st.title("CV Suitability Checker with Feedback")
+st.write("Upload your CV and paste the job description to see how well your CV aligns with the job requirements and get improvement suggestions.")
 
 # Load the pre-trained SentenceTransformer model
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
