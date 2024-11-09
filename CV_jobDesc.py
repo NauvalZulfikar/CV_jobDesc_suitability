@@ -1,7 +1,7 @@
 import streamlit as st
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from transformers import pipeline
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 import numpy as np
 from docx import Document  # Import python-docx for handling DOCX files
 
@@ -9,15 +9,18 @@ from docx import Document  # Import python-docx for handling DOCX files
 st.title("CV Suitability Checker with Feedback")
 st.write("Upload your CV and paste the job description to see how well your CV aligns with the job requirements and get improvement suggestions.")
 
-# Load the pre-trained SentenceTransformer model
+# Load the pre-trained SentenceTransformer model for similarity check
 model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
 
-# Load a text generation model for feedback
+# Load FLAN-T5 model for feedback generation
 @st.cache_resource
-def load_feedback_model():
-    return pipeline("text-generation", model="EleutherAI/gpt-neo-1.3B")
+def load_flan_t5():
+    # Load FLAN-T5 model and tokenizer
+    tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-large")
+    model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-large")
+    return tokenizer, model
 
-feedback_model = load_feedback_model()
+tokenizer, flan_model = load_flan_t5()
 
 # Streamlit file uploader
 uploaded_file = st.file_uploader("Upload your CV file", type=['docx', 'txt'])
@@ -64,9 +67,13 @@ if uploaded_file is not None and job_description:
         truncated_cv_content = file_content[:1000]  # Truncate CV text to first 1000 characters
         truncated_job_description = job_description[:1000]  # Truncate job description to first 1000 characters
 
-        # Generate feedback using GPT-Neo with a reduced max_length
-        feedback_prompt = f"The job description is:\n{truncated_job_description}\n\nThe CV content is:\n{truncated_cv_content}\n\nPlease provide feedback on what could be improved in the CV to better match the job description."
-        feedback = feedback_model(feedback_prompt, max_length=5000, num_return_sequences=1)[0]['generated_text']
+        # Create prompt for FLAN-T5
+        feedback_prompt = f"The job description is:\n{truncated_job_description}\n\nThe CV content is:\n{truncated_cv_content}\n\nPlease provide specific feedback on what could be improved in the CV to better match the job description."
+
+        # Tokenize and generate feedback using FLAN-T5
+        inputs = tokenizer(feedback_prompt, return_tensors="pt", max_length=512, truncation=True)
+        outputs = flan_model.generate(inputs["input_ids"], max_length=200, num_beams=5, early_stopping=True)
+        feedback = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
         # Display improvement suggestions
         st.subheader("Improvement Suggestions")
