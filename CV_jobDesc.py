@@ -16,6 +16,14 @@ model_name = "microsoft/deberta-v3-large"
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModel.from_pretrained(model_name)
 
+# Function to generate embeddings
+def get_embeddings(text):
+    inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True, max_length=512)
+    with torch.no_grad():
+        outputs = model(**inputs)
+        embeddings = outputs.last_hidden_state.mean(dim=1)
+    return embeddings
+
 # Streamlit file uploader
 uploaded_file = st.file_uploader("Upload your CV file", type=['pdf','docx', 'txt'])
 
