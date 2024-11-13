@@ -5,3 +5,4 @@ torch
 scikit-learn
 python-docx
 numpy
+sentencepiece
