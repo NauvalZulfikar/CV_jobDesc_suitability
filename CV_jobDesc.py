@@ -1,7 +1,7 @@
 import streamlit as st
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModel
 import torch
 import numpy as np
 from docx import Document  # Import python-docx for handling DOCX files
@@ -11,11 +11,13 @@ st.title("CV Suitability Checker using Large Language Model (LLM)")
 st.write("This tool surpasses typical ATS systems by using semantic analysis to assess CV-job alignment contextually, not just through keyword matching. It leverages SentenceTransformer for nuanced similarity scoring and integrates advanced language models to generate tailored feedback, helping applicants refine their CVs to better fit specific job descriptions.")
 st.write("Upload your CV and paste the job description to see how well your CV aligns with the job requirements and get improvement suggestions.")
 
-# Load the pre-trained SentenceTransformer model
-model = SentenceTransformer('paraphrase-MiniLM-L6-v2')
+# Load the pre-trained DeBERTa-v3-large model and tokenizer
+model_name = "microsoft/deberta-v3-large"
+tokenizer = AutoTokenizer.from_pretrained(model_name)
+model = AutoModel.from_pretrained(model_name)
 
 # Streamlit file uploader
-uploaded_file = st.file_uploader("Upload your CV file", type=['docx', 'txt'])
+uploaded_file = st.file_uploader("Upload your CV file", type=['pdf','docx', 'txt'])
 
 # Job description input
 job_description = st.text_area("Enter the Job Description")
