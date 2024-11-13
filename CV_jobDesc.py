@@ -5,7 +5,7 @@ import torch
 from docx import Document  # Import python-docx for handling DOCX files
 
 # Streamlit app title and description
-st.title("CV Suitability Checker using DeBERTa-v3-large")
+st.title("CV Suitability Checker using Large Language Model (LLM)")
 st.write("This tool surpasses typical ATS systems by using semantic analysis to assess CV-job alignment contextually. It leverages DeBERTa-v3-large for nuanced similarity scoring and generates tailored feedback to help refine your CV.")
 
 # Load the DeBERTa-v3-large model and tokenizer
@@ -19,7 +19,7 @@ def load_model_and_tokenizer():
 tokenizer, model = load_model_and_tokenizer()
 
 # Streamlit file uploader for CV
-uploaded_file = st.file_uploader("Upload your CV file", type=['docx', 'txt'])
+uploaded_file = st.file_uploader("Upload your CV file", type=['pdf', 'docx', 'txt'])
 
 # Job description input
 job_description = st.text_area("Enter the Job Description")
